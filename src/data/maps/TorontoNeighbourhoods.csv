@@ -1,0 +1,160 @@
+﻿Area,Name,Borough
+1,West Humber-Clairville,Etobicoke
+2,Mount Olive-Silverstone-Jamestown,Etobicoke
+3,Thistletown-Beaumond Heights,Etobicoke
+4,Rexdale-Kipling,Etobicoke
+5,Elms-Old Rexdale,Etobicoke
+6,Kingsview Village-The Westway,Etobicoke
+7,Willowridge-Martingrove-Richview,Etobicoke
+8,Humber Heights-Westmount,Etobicoke
+9,Edenbridge-Humber Valley,Etobicoke
+10,Princess-Rosethorn,Etobicoke
+11,Eringate-Centennial-West Deane,Etobicoke
+12,Markland Wood,Etobicoke
+13,Etobicoke West Mall,Etobicoke
+15,Kingsway South,Etobicoke
+16,Stonegate-Queensway,Etobicoke
+18,New Toronto,Etobicoke
+19,Long Branch,Etobicoke
+20,Alderwood,Etobicoke
+21,Humber Summit,North York
+22,Humbermede,North York
+23,Pelmo Park-Humberlea,North York
+24,Black Creek,North York
+25,Glenfield-Jane Heights,North York
+27,York University Heights,North York
+28,Rustic,North York
+29,Maple Leaf,North York
+30,Brookhaven-Amesbury,North York
+31,Yorkdale-Glen Park,North York
+32,Englemount-Lawrence,North York
+33,Clanton Park,North York
+34,Bathurst Manor,North York
+35,Westminster-Branson,North York
+36,Newtonbrook West,North York
+37,Willowdale West,North York
+38,Lansing-Westgate,North York
+39,Bedford Park-Nortown,North York
+40,St. Andrew-Windfields,North York
+41,Bridle Path-Sunnybrook-York Mills,North York
+42,Banbury-Don Mills,North York
+43,Victoria Village,North York
+44,Flemingdon Park,North York
+46,Pleasant View,North York
+47,Don Valley Village,North York
+48,Hillcrest Village,North York
+49,Bayview Woods-Steeles,North York
+50,Newtonbrook East,North York
+52,Bayview Village,North York
+53,Henry Farm,North York
+54,O'Connor–Parkview,East York
+55,Thorncliffe Park,East York
+56,Leaside-Bennington,East York
+57,Broadview North,East York
+58,Old East York,East York
+59,Danforth - East York,East York
+60,Woodbine-Lumsden,East York
+61,Taylor Massey,East York
+62,East End-Danforth,Old City of Toronto
+63,The Beaches,Old City of Toronto
+64,Woodbine Corridor,Old City of Toronto
+65,Greenwood-Coxwell,Old City of Toronto
+66,Danforth,Old City of Toronto
+67,Playter Estates-Danforth,Old City of Toronto
+68,North Riverdale,Old City of Toronto
+69,Blake-Jones,Old City of Toronto
+70,South Riverdale,Old City of Toronto
+71,Cabbagetown-South St. James Town,Old City of Toronto
+72,Regent Park,Old City of Toronto
+73,Moss Park,Old City of Toronto
+74,North St. James Town,Old City of Toronto
+78,Kensington-Chinatown,Old City of Toronto
+79,University,Old City of Toronto
+80,Palmerston-Little Italy,Old City of Toronto
+81,Trinity-Bellwoods,Old City of Toronto
+83,Dufferin Grove,Old City of Toronto
+84,Little Portugal,Old City of Toronto
+85,South Parkdale,Old City of Toronto
+86,Roncesvalles,Old City of Toronto
+87,High Park-Swansea,Old City of Toronto
+88,High Park North,Old City of Toronto
+89,Runnymede-Bloor West Village,Old City of Toronto
+90,Junction Area,Old City of Toronto
+91,Weston-Pelham Park,Old City of Toronto
+92,Corso Italia-Davenport,Old City of Toronto
+94,Wychwood,Old City of Toronto
+95,Annex,Old City of Toronto
+96,Casa Loma,Old City of Toronto
+97,Yonge–St. Clair,Old City of Toronto
+98,Rosedale-Moore Park,Old City of Toronto
+99,Mount Pleasant East,Old City of Toronto
+100,Yonge–Eglinton,Old City of Toronto
+101,Forest Hill South,Old City of Toronto
+102,Forest Hill North,Old City of Toronto
+103,Lawrence Park South,Old City of Toronto
+105,Lawrence Park North,Old City of Toronto
+106,Humewood-Cedarvale,York
+107,Oakwood Village,York
+108,Briar Hill-Belgravia,York
+109,Caledonia-Fairbank,York
+110,Keelesdale-Eglinton West,York
+111,Rockcliffe-Smythe,York
+112,Beechborough-Greenbrook,York
+113,Weston,York
+114,Lambton Baby Point,York
+115,Mount Dennis,York
+116,Steeles,Scarborough
+118,Tam O'Shanter-Sullivan,Scarborough
+119,Wexford-Maryvale,Scarborough
+120,Clairlea-Birchmount,Scarborough
+121,Oakridge,Scarborough
+122,Birchcliffe-Cliffside,Scarborough
+123,Cliffcrest,Scarborough
+124,Kennedy Park,Scarborough
+125,Ionview,Scarborough
+126,Dorset Park,Scarborough
+128,Agincourt South-Malvern West,Scarborough
+129,Agincourt North,Scarborough
+130,Milliken,Scarborough
+131,Rouge,Scarborough
+133,Centennial Scarborough,Scarborough
+134,Highland Creek,Scarborough
+135,Morningside,Scarborough
+136,West Hill,Scarborough
+138,Eglinton East,Scarborough
+139,Scarborough Village,Scarborough
+140,Guildwood,Scarborough
+141,Golfdale–Cedarbrae–Woburn,Scarborough
+142,Woburn North,Scarborough
+143,West Rouge,Scarborough
+144,Morningside Heights,Scarborough
+145,Malvern West,Scarborough
+146,Malvern East,Scarborough
+147,L'Amoreaux West,Scarborough
+148,Easr L'Amoreaux,Scarborough
+149,Parkwoods–O'Connor Hills,North York
+150,Fenside–Parkwoods,North York
+151,Yonge–Doris,North York
+152,East Willowdale,North York
+153,Avondale,North York
+154,Oakdale–Beverly Heights,North York
+155,Downsview,North York
+156,Bendale–Glen Andrew,Scarborough
+157,Bendale South,Scarborough
+158,Islington,Etobicoke
+159,Etobicoke City Centre,Etobicoke
+160,Mimico–Queensway,Etobicoke
+161,Humber Bay Shores,Etobicoke
+162,West Queen West,Old City of Toronto
+163,Fort York–Liberty Village,Old City of Toronto
+164,Wellington Place,Old City of Toronto
+165,Harbourfront–CityPlace,Old City of Toronto
+166,St Lawrence-East Bayfront The Islands,Old City of Toronto
+167,Church–Wellesley,Old City of Toronto
+168,Downtown Yonge East,Old City of Toronto
+169,Bay–Cloverhill,Old City of Toronto
+170,Yonge–Bay Corridor,Old City of Toronto
+171,Junction–Wallace Emerson,Old City of Toronto
+172,Dovercourt Village,Old City of Toronto
+173,North Toronto,Old City of Toronto
+174,South Eglinton–Davisville,Old City of Toronto

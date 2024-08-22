@@ -1,0 +1,7 @@
+## Our Mission
+
+Spatial equity in Toronto is about how public space is distributed, accessed, and used, leading to different outcomes for various communities. Wealthier, predominantly white neighborhoods often benefit from better amenities like parks, bike lanes, and tree-lined streets, which contribute to cleaner air, safer streets, and improved health. In contrast, lower-income and racialized communities often face underfunded public spaces dominated by car traffic and lacking essential infrastructure, exacerbating disparities in health, mobility, and quality of life.
+
+Climate-related challenges like flooding and extreme heat further highlight these inequities. Neighborhoods with less green space and older infrastructure are more vulnerable to extreme heat and flooding, leading to higher rates of illness, death, and property damage. These impacts disproportionately affect lower-income and racialized communities, who often lack the resources to mitigate or recover from such events.
+
+These spatial and environmental inequities are deeply tied to racial justice. The historical marginalization of racialized communities in Toronto has resulted in disproportionate exposure to environmental hazards and inadequate public spaces. Achieving spatial equity means addressing these injustices by redistributing resources, improving infrastructure, and ensuring all communities have access to safe, healthy, and resilient public spaces.
