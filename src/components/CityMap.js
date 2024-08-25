@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import wardsData from "../data/maps/TorontoWards.geojson"; // Adjust the path to your GeoJSON file
-import neighbourhoodsData from "../data/maps/TorontoNeighbourhoods.geojson"; // Adjust the path to your GeoJSON file
+import wardsData from "../utils/maps/TorontoWards.geojson"; // Adjust the path to your GeoJSON file
+import neighbourhoodsData from "../utils/maps/TorontoNeighbourhoods.geojson"; // Adjust the path to your GeoJSON file
 
 mapboxgl.accessToken =
   "pk.eyJ1IjoidG9sdW9vc2h5IiwiYSI6ImNsem44NmU0bjBsemkybHBuMmtqOGxuMmMifQ.9QVijevpo9rKZ7aO925FTw";

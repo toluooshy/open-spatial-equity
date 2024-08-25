@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 
-import mission from "../data/menu/mission.md";
-import acknowledgements from "../data/menu/acknowledgements.md";
-import sources from "../data/menu/sources.md";
-import act from "../data/menu/act.md";
+import mission from "../utils/menu/mission.md";
+import acknowledgements from "../utils/menu/acknowledgements.md";
+import sources from "../utils/menu/sources.md";
+import act from "../utils/menu/act.md";
 
 const Menu = ({
   isDesktop = false,
