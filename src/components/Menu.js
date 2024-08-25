@@ -3,11 +3,6 @@
 import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 
-import mission from "../utils/menu/mission.md";
-import acknowledgements from "../utils/menu/acknowledgements.md";
-import sources from "../utils/menu/sources.md";
-import act from "../utils/menu/act.md";
-
 const Menu = ({
   isDesktop = false,
   dimensions = {},
@@ -19,21 +14,42 @@ const Menu = ({
   style = {},
   ...buttonProps
 }) => {
+  const [mission, setMission] = useState("");
+  const [acknowledgements, setAcknowledgements] = useState("");
+  const [sources, setSources] = useState("");
+  const [act, setAct] = useState("");
+
   const [activeSelection, setActiveSelection] = useState("mission");
   const [markdown, setMarkdown] = useState("");
 
-  const markdownFiles = {
-    mission: mission,
-    acknowledgements: acknowledgements,
-    sources: sources,
-    act: act,
-  };
+  useEffect(() => {
+    const files = [
+      `${process.env.PUBLIC_URL}/data/menu/mission.md`,
+      `${process.env.PUBLIC_URL}/data/menu/acknowledgements.md`,
+      `${process.env.PUBLIC_URL}/data/menu/sources.md`,
+      `${process.env.PUBLIC_URL}/data/menu/act.md`,
+    ];
+    Promise.all(files.map((file) => fetch(file).then((res) => res.text())))
+      .then(([missionText, acknowledgementsText, sourcesText, actText]) => {
+        setMission(missionText);
+        setAcknowledgements(acknowledgementsText);
+        setSources(sourcesText);
+        setAct(actText);
+      })
+      .catch((error) =>
+        console.error("Failed to fetch markdown files:", error)
+      );
+  }, []);
 
   useEffect(() => {
-    fetch(markdownFiles[activeSelection])
-      .then((res) => res.text())
-      .then((text) => setMarkdown(text));
-  }, [activeSelection]);
+    const markdownFiles = {
+      mission: mission,
+      acknowledgements: acknowledgements,
+      sources: sources,
+      act: act,
+    };
+    setMarkdown(markdownFiles[activeSelection]);
+  }, [activeSelection, mission, acknowledgements, sources, act]);
 
   return (
     <div

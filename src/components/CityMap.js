@@ -2,9 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import wardsData from "../utils/maps/TorontoWards.geojson"; // Adjust the path to your GeoJSON file
-import neighbourhoodsData from "../utils/maps/TorontoNeighbourhoods.geojson"; // Adjust the path to your GeoJSON file
-
 mapboxgl.accessToken =
   "pk.eyJ1IjoidG9sdW9vc2h5IiwiYSI6ImNsem44NmU0bjBsemkybHBuMmtqOGxuMmMifQ.9QVijevpo9rKZ7aO925FTw";
 
@@ -34,7 +31,24 @@ const CityMap = ({
   style = {},
   ...buttonProps
 }) => {
-  const center = [-79.3832, 43.74];
+  const [wardsGeoJSON, setWardsGeoJSON] = useState(null);
+  const [neighbourhoodsGeoJSON, setNeighbourhoodsGeoJSON] = useState(null);
+
+  useEffect(() => {
+    const files = [
+      `${process.env.PUBLIC_URL}/data/maps/TorontoWards.geojson`,
+      `${process.env.PUBLIC_URL}/data/maps/TorontoNeighbourhoods.geojson`,
+    ];
+
+    Promise.all(files.map((file) => fetch(file).then((res) => res.json())))
+      .then(([wardsData, neighbourhoodsData]) => {
+        setWardsGeoJSON(wardsData);
+        setNeighbourhoodsGeoJSON(neighbourhoodsData);
+      })
+      .catch((error) => console.error("Failed to fetch GeoJSON files:", error));
+  }, []);
+
+  const center = [-79.3832, 43.74]; // center coordinates of the city
   const zoom = 9;
   const bounds = [
     [center[0] - 0.27, center[1] - 0.17], // southwest corner
@@ -47,12 +61,10 @@ const CityMap = ({
   const mapContainerRef = useRef(null);
   const mapData =
     text.metrics[activeMetric] === text.metrics["city_subdivision"]
-      ? wardsData
-      : neighbourhoodsData;
+      ? wardsGeoJSON
+      : neighbourhoodsGeoJSON;
 
   useEffect(() => {
-    console.log(activeCategory);
-
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/light-v10",
@@ -170,7 +182,7 @@ const CityMap = ({
 
     // Clean up on unmount
     return () => map.remove();
-  }, [activeMetric, activeCategory, activeTopic]);
+  }, [mapData, activeMetric, activeCategory, activeTopic]);
 
   return (
     <div>
