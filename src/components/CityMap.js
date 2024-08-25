@@ -180,6 +180,9 @@ const CityMap = ({
       });
     });
 
+    console.log(wardsGeoJSON);
+    console.log(mapData);
+
     // Clean up on unmount
     return () => map.remove();
   }, [mapData, activeMetric, activeCategory, activeTopic]);
