@@ -49,6 +49,9 @@ const Menu = ({
       act: act,
     };
     setMarkdown(markdownFiles[activeSelection]);
+    console.log(mission);
+    console.log(activeSelection);
+    console.log(markdownFiles[activeSelection]);
   }, [activeSelection, mission, acknowledgements, sources, act]);
 
   return (
