@@ -24,10 +24,10 @@ const Menu = ({
 
   useEffect(() => {
     const files = [
-      `${process.env.PUBLIC_URL}/data/menu/mission.md`,
-      `${process.env.PUBLIC_URL}/data/menu/acknowledgements.md`,
-      `${process.env.PUBLIC_URL}/data/menu/sources.md`,
-      `${process.env.PUBLIC_URL}/data/menu/act.md`,
+      `${process.env.PUBLIC_URL}/files/menu/mission.md`,
+      `${process.env.PUBLIC_URL}/files/menu/acknowledgements.md`,
+      `${process.env.PUBLIC_URL}/files/menu/sources.md`,
+      `${process.env.PUBLIC_URL}/files/menu/act.md`,
     ];
     Promise.all(files.map((file) => fetch(file).then((res) => res.text())))
       .then(([missionText, acknowledgementsText, sourcesText, actText]) => {
@@ -49,9 +49,6 @@ const Menu = ({
       act: act,
     };
     setMarkdown(markdownFiles[activeSelection]);
-    console.log(mission);
-    console.log(activeSelection);
-    console.log(markdownFiles[activeSelection]);
   }, [activeSelection, mission, acknowledgements, sources, act]);
 
   return (
@@ -65,6 +62,8 @@ const Menu = ({
         ...style,
         textAlign: "left",
         backgroundColor: "rgba(255,255,255,.75)",
+        marginTop: 10,
+        overflowY: "scroll",
       }}
     >
       <div style={{ width: "100%" }}>

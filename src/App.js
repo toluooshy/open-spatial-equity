@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Papa from "papaparse";
 import text from "./data";
 import background from "./graphics/branding/background.png";
 import Histogram from "./components/Histogram";
@@ -10,7 +11,7 @@ import { useWindowDimensions } from "./utils/CustomHooks";
 
 const App = () => {
   const dimensions = useWindowDimensions();
-  const isDesktop = dimensions.width > 850;
+  const isDesktop = dimensions.width > 1024;
 
   const [selectionConsoleVisible, setSelectionConsoleVisible] = useState(false);
   const [activeView, setActiveView] = useState("portal");
@@ -19,7 +20,29 @@ const App = () => {
   const [activeTopic, setActiveTopic] = useState("");
   const [activeSolution, setActiveSolution] = useState("");
 
+  const [q1, setQ1] = useState();
+  const [median, setMedian] = useState();
+  const [q3, setQ3] = useState();
+
   const [activeCenterpiece, setActiveCenterpiece] = useState("video"); // video, table, graph, map, or comparison - depending on view and user selection
+  const [metricdata, setMetricdata] = useState([]);
+
+  const datasets = {
+    Infrastructure: {
+      "Median Income": [
+        "files/datasets/infrastructure/median_income_ward.csv",
+        "files/datasets/infrastructure/median_income_neighbourhood.csv",
+      ],
+    },
+    Health: {
+      "Healthcare Workers": [
+        "files/datasets/health/healthcare_workers_ward.csv",
+        "files/datasets/health/healthcare_workers_neighbourhood.csv",
+      ],
+    },
+    Environment: {},
+    Transportation: {},
+  };
 
   const views = {
     portal: "🇨🇦",
@@ -31,44 +54,53 @@ const App = () => {
   const centerpieceOptions =
     activeView === "city_data" ? ["🔢", "📊", "🗺"] : ["📊", "🗺"];
 
-  const metricdata = [
-    {
-      section: "A1",
-      value: 7,
-    },
-    {
-      section: "B1",
-      value: 3,
-    },
-    {
-      section: "C1",
-      value: 1,
-    },
-    {
-      section: "D1",
-      value: 1.5,
-    },
-    {
-      section: "A2",
-      value: 7,
-    },
-    {
-      section: "B2",
-      value: 7,
-    },
-    {
-      section: "C2",
-      value: 6,
-    },
-    {
-      section: "D2",
-      value: 2.5,
-    },
-    {
-      section: "D3",
-      value: 9.5,
-    },
-  ];
+  const convertCSVToArray = (data) => {
+    const names = data[0];
+    const ids = data[1];
+    const values = data[2];
+
+    const result = names.map((name, index) => ({
+      name: name.trim(),
+      section: ids[index].trim(),
+      value: Number(values[index].trim()),
+    }));
+
+    return result;
+  };
+
+  useEffect(() => {
+    console.log(
+      `${process.env.PUBLIC_URL}${
+        datasets[activeCategory?.title]?.[activeTopic]?.[
+          activeMetric === "city_subdivision" ? 0 : 1
+        ]
+      }`
+    );
+    if (!!activeTopic && !!activeCategory) {
+      // Fetch the CSV file from the public folder
+      const fetchData = async () => {
+        await fetch(
+          `${process.env.PUBLIC_URL}${
+            datasets[activeCategory?.title]?.[activeTopic]?.[
+              activeMetric === "city_subdivision" ? 0 : 1
+            ]
+          }`
+        )
+          .then((response) => response.text())
+          .then((text) => {
+            // Parse the CSV text using PapaParse
+            Papa.parse(text, {
+              complete: (result) => {
+                const parsedData = convertCSVToArray(result.data);
+                setMetricdata(parsedData.sort((a, b) => b.value - a.value));
+              },
+              header: false, // No headers in CSV
+            });
+          });
+      };
+      fetchData();
+    }
+  }, [activeTopic, activeCategory, activeMetric]);
 
   const openInNewTab = (url) => {
     window.open(url, "_blank", "noreferrer");
@@ -86,9 +118,9 @@ const App = () => {
       <img
         src={background}
         style={{
-          minWidth: "100%",
+          minWidth: dimensions.width * 1.5,
           opacity: 0.5,
-          transform: "translate(-25%,-25%)",
+          transform: "translate(-33%,-33%)",
         }}
       />
       <div
@@ -174,6 +206,47 @@ const App = () => {
                     : activeView === view
                     ? text.views[view]
                     : views[view]}
+
+                  {/* desktop metrics selector */}
+                  {isDesktop &&
+                  activeView === view &&
+                  view !== "portal" &&
+                  view !== "learn_more" ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        fontSize: 10,
+                        borderRadius: 4,
+                        padding: 4,
+                        margin: "auto",
+                        marginTop: 4,
+                        textAlign: "center",
+                      }}
+                    >
+                      {Object.keys(text.metrics).map((metric) => (
+                        <div
+                          key={metric}
+                          style={{
+                            textAlign: "center",
+                            color:
+                              activeMetric === metric ? "#ffffff" : "#888888",
+                            borderLeft:
+                              metric !== Object.keys(text.metrics)[0] &&
+                              "solid 1px #ffffff",
+                            paddingRight: 6,
+                            paddingLeft: 6,
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            setActiveMetric(metric);
+                          }}
+                        >
+                          {text.metrics[metric]}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -188,9 +261,10 @@ const App = () => {
                 backgroundColor: "rgba(0,0,0,.85)",
                 borderRight: "solid 1px #ffffff",
                 borderLeft: isDesktop ? "" : "solid 1px #ffffff",
-                paddingTop: 10,
+                paddingTop: isDesktop ? 0 : 10,
                 flex: 1,
-                width: isDesktop && 250,
+                display: "flex",
+                flexDirection: isDesktop ? "row" : "column",
               }}
             >
               {!!text.categories ? (
@@ -199,7 +273,9 @@ const App = () => {
                     display: "flex",
                     justifyContent: "space-around",
                     fontSize: 15,
-                    flexWrap: "wrap",
+                    flexWrap: !isDesktop && "wrap",
+                    flexDirection: isDesktop ? "column" : "row",
+                    width: isDesktop && 250,
                   }}
                 >
                   {Object.entries(text.categories).map((category) => (
@@ -207,30 +283,164 @@ const App = () => {
                       key={category}
                       style={{
                         textAlign: "center",
-                        flex: 1,
-                        color: "#ffffff",
-                        opacity: activeCategory === category[1] ? 1 : 0.5,
+                        flex: !activeCategory
+                          ? 1
+                          : isDesktop && activeCategory === category[1]
+                          ? 1
+                          : 0,
+                        color: isDesktop
+                          ? activeCategory === category[1]
+                            ? "#ffffff"
+                            : "#000000"
+                          : "#ffffff",
                         cursor: "pointer",
-                        padding: isDesktop ? 10 : 0,
+                        height: isDesktop && 300,
+                        marginTop: !isDesktop && -4,
                       }}
                       onClick={() => {
                         setActiveCategory(category[1]);
-                        console.log(category[1]);
                       }}
                     >
-                      {category[1].title}
+                      <div
+                        style={{
+                          backgroundColor: isDesktop
+                            ? activeCategory === category[1]
+                              ? "rgba(0,0,0,0)"
+                              : "#ffffff"
+                            : "rgba(0,0,0,0)",
+                          opacity:
+                            isDesktop || activeCategory === category[1]
+                              ? 1
+                              : 0.5,
+                          padding: !!activeCategory && isDesktop ? 10 : 0,
+                          height: !activeCategory && "100%",
+                          alignContent: "center",
+                          borderTop: "solid 1px #000000",
+                          borderBottom: "solid 1px #000000",
+                        }}
+                      >
+                        {category[1].title}
+                      </div>
+                      {isDesktop && activeCategory === category[1] ? (
+                        <div
+                          style={{
+                            justifyContent: "center",
+                            fontSize: 12,
+                            backgroundColor: "#ffffff",
+                            height: "100%",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              justifyContent: "center",
+                              fontSize: 12,
+                              padding: 6,
+                            }}
+                          >
+                            {activeCategory?.topics?.map((topic) => (
+                              <div
+                                key={topic}
+                                style={{
+                                  textAlign: "center",
+                                  color:
+                                    activeTopic === topic
+                                      ? "#ffffff"
+                                      : "#000000",
+                                  border:
+                                    activeTopic === topic
+                                      ? "solid 1px #ffffff"
+                                      : "solid 1px #000000",
+                                  backgroundColor:
+                                    activeTopic === topic
+                                      ? "#000000"
+                                      : "#ffffff",
+                                  margin: 4,
+                                  borderRadius: 10,
+                                  paddingTop: 1,
+                                  paddingBottom: 2,
+                                  paddingRight: 8,
+                                  paddingLeft: 8,
+                                  cursor: "pointer",
+                                }}
+                                onClick={() => {
+                                  setActiveTopic(topic);
+                                  setActiveSolution(topic);
+                                }}
+                              >
+                                {topic}
+                              </div>
+                            ))}
+                          </div>
+
+                          {activeCategory?.topics?.indexOf(activeTopic) !==
+                          -1 ? (
+                            <div style={{ color: "#000000" }}>
+                              descriptive text goes here
+                            </div>
+                          ) : null}
+                          {activeCenterpiece === "map" &&
+                          activeCategory?.topics?.indexOf(activeTopic) !==
+                            -1 ? (
+                            <div
+                              style={{
+                                display: "flex",
+                                margin: "auto",
+                                marginTop: 20,
+                                width: 220,
+                                color: "#000000",
+                              }}
+                            >
+                              {[4, 3, 2, 1].map((index) => (
+                                <div>
+                                  <div
+                                    style={{
+                                      width: 55,
+                                      height: 20,
+                                      backgroundColor: !!activeCategory
+                                        ? text.categories[
+                                            activeCategory.title.toLowerCase()
+                                          ].colors[index]
+                                        : text.categories["infrastructure"]
+                                            .colors[1],
+                                    }}
+                                  />
+                                  <div
+                                    style={{ fontSize: 10, textAlign: "left" }}
+                                  >
+                                    {index === 4
+                                      ? metricdata
+                                          .map((obj) => parseFloat(obj.value))
+                                          .sort((a, b) => a - b)[0]
+                                      : index === 3
+                                      ? q1
+                                      : index === 2
+                                      ? median
+                                      : index === 1
+                                      ? `${q3}+`
+                                      : 0}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
                   ))}
                 </div>
               ) : null}
-              <div
-                style={{
-                  borderTop: "solid 1px #ffffff",
-                  margin: 10,
-                  marginBottom: 0,
-                }}
-              />
-              {!!activeCategory && !!activeCategory.topics ? (
+              {!isDesktop ? (
+                <div
+                  style={{
+                    borderTop: "solid 1px #ffffff",
+                    margin: 10,
+                    marginBottom: 0,
+                  }}
+                />
+              ) : null}
+              {!isDesktop && !!activeCategory && !!activeCategory.topics ? (
                 <div
                   style={{
                     display: "flex",
@@ -280,10 +490,7 @@ const App = () => {
               style={{
                 display: "flex",
                 justifyContent: "center",
-                backgroundColor:
-                  selectionConsoleVisible || isDesktop
-                    ? "rgba(255,255,255,.75)"
-                    : "",
+                backgroundColor: "rgba(255,255,255,.75)",
               }}
             >
               <div
@@ -347,7 +554,7 @@ const App = () => {
         <div
           style={{
             margin: "auto",
-            height: isDesktop ? dimensions.height : 600,
+            height: dimensions.height,
             width: isDesktop
               ? !!activeSolution
                 ? dimensions.width - 300
@@ -364,155 +571,178 @@ const App = () => {
             }}
           >
             {/* main centerpiece */}
-            <div
-              style={{
-                position: "relative",
-                textAlign: "center",
-                margin: 30,
-              }}
-            >
-              {activeView === "city_data" ||
-              activeView === "community_profiles" ? (
-                <div
-                  style={{
-                    textAlign: "left",
-                    display: "flex",
-                  }}
-                >
-                  <div style={{ marginTop: 10, fontSize: 18 }}>
-                    {activeTopic}
-                  </div>
-                </div>
-              ) : null}
-              {activeView === "city_data" ||
-              activeView === "community_profiles" ? (
-                <div style={{ display: "flex" }}>
-                  {centerpieceOptions.map((icon, index) => (
-                    <div
-                      style={{
-                        backgroundColor: "#000000",
-                        borderRadius: 4,
-                        marginTop: 4,
-                        marginBottom: 4,
-                        marginRight:
-                          index === centerpieceOptions.length - 1 ? 6 : 10,
-                        padding: 4,
-                        fontSize: 10,
-                        width: 14,
-                        height: 14,
-                        textAlign: "center",
-                        alignContent: "center",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => {
-                        setActiveCenterpiece(
-                          icon === "🔢"
-                            ? "table"
-                            : icon === "📊"
-                            ? "graph"
-                            : "map"
-                        );
-                      }}
-                    >
-                      {icon}
-                    </div>
-                  ))}
-
-                  {/* metrics selector */}
+            {activeCenterpiece === "video" ||
+            activeCenterpiece === "menu" ||
+            activeCategory?.topics?.indexOf(activeTopic) !== -1 ? (
+              <div
+                style={{
+                  position: "relative",
+                  textAlign: "center",
+                  margin: 0,
+                }}
+              >
+                {activeView === "city_data" ||
+                activeView === "community_profiles" ? (
                   <div
                     style={{
+                      textAlign: "left",
                       display: "flex",
-                      justifyContent: "flex-start",
-                      fontSize: 10,
-                      backgroundColor: "#000000",
-                      borderRadius: 4,
-                      padding: 4,
-                      margin: 4,
                     }}
                   >
-                    {Object.keys(text.metrics).map((metric) => (
+                    <div style={{ marginTop: 10, fontSize: 18 }}>
+                      {activeTopic}
+                    </div>
+                  </div>
+                ) : null}
+                {activeView === "city_data" ||
+                (activeView === "community_profiles" && !!activeTopic) ? (
+                  <div style={{ display: "flex" }}>
+                    {centerpieceOptions.map((icon, index) => (
                       <div
-                        key={metric}
                         style={{
-                          flex: 1,
+                          backgroundColor: "#000000",
+                          borderRadius: 4,
+                          marginTop: 4,
+                          marginBottom: 4,
+                          marginRight:
+                            index === centerpieceOptions.length - 1 ? 6 : 10,
+                          padding: 4,
+                          fontSize: 10,
+                          width: 14,
+                          height: 14,
                           textAlign: "center",
-                          color:
-                            activeMetric === metric ? "#ffffff" : "#888888",
-                          borderLeft:
-                            metric !== Object.keys(text.metrics)[0] &&
-                            "solid 1px #ffffff",
-                          paddingRight: 6,
-                          paddingLeft: 6,
+                          alignContent: "center",
                           cursor: "pointer",
                         }}
                         onClick={() => {
-                          setActiveMetric(metric);
+                          setActiveCenterpiece(
+                            icon === "🔢"
+                              ? "table"
+                              : icon === "📊"
+                              ? "graph"
+                              : "map"
+                          );
                         }}
                       >
-                        {text.metrics[metric]}
+                        {icon}
                       </div>
                     ))}
+                    {/* mobile metrics selector */}
+                    {!isDesktop ? (
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "flex-start",
+                          fontSize: 10,
+                          borderRadius: 4,
+                          padding: 4,
+                          margin: 4,
+                          backgroundColor: "#000000",
+                        }}
+                      >
+                        {Object.keys(text.metrics).map((metric) => (
+                          <div
+                            key={metric}
+                            style={{
+                              flex: 1,
+                              textAlign: "center",
+                              color:
+                                activeMetric === metric ? "#ffffff" : "#888888",
+                              borderLeft:
+                                metric !== Object.keys(text.metrics)[0] &&
+                                "solid 1px #ffffff",
+                              paddingRight: 6,
+                              paddingLeft: 6,
+                              cursor: "pointer",
+                            }}
+                            onClick={() => {
+                              setActiveMetric(metric);
+                            }}
+                          >
+                            {text.metrics[metric]}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
-                </div>
-              ) : null}
-              {activeCenterpiece === "video" ? (
-                <iframe
-                  margin="auto"
-                  height={isDesktop ? dimensions.height - 100 : 490}
-                  width={
-                    isDesktop ? dimensions.width * 0.75 : dimensions.width - 40
-                  }
-                  src="https://www.youtube.com/embed/jvW3NQQuUh0?si=Tz9m-2uTDLkj2nd7"
-                  title="YouTube video player"
-                  frameborder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  referrerpolicy="strict-origin-when-cross-origin"
-                  allowfullscreen
-                ></iframe>
-              ) : activeCenterpiece === "table" ? (
-                <DataTable
-                  isDesktop={isDesktop}
-                  dimensions={dimensions}
-                  text={text}
-                  activeCategory={activeCategory}
-                  activeTopic={activeTopic}
-                  activeMetric={activeMetric}
-                  metricdata={metricdata}
-                />
-              ) : activeCenterpiece === "graph" ? (
-                <Histogram
-                  isDesktop={isDesktop}
-                  dimensions={dimensions}
-                  text={text}
-                  activeCategory={activeCategory}
-                  activeTopic={activeTopic}
-                  activeMetric={activeMetric}
-                  metricdata={metricdata}
-                />
-              ) : activeCenterpiece === "map" ? (
-                <CityMap
-                  isDesktop={isDesktop}
-                  dimensions={dimensions}
-                  text={text}
-                  activeCategory={activeCategory}
-                  activeTopic={activeTopic}
-                  activeMetric={activeMetric}
-                  metricdata={metricdata}
-                />
-              ) : activeCenterpiece === "menu" ? (
-                <Menu
-                  isDesktop={isDesktop}
-                  dimensions={dimensions}
-                  text={text}
-                  activeCategory={activeCategory}
-                  activeTopic={activeTopic}
-                  activeMetric={activeMetric}
-                  metricdata={metricdata}
-                />
-              ) : (
-                <div>comparison goes here</div>
-              )}
-            </div>
+                ) : null}
+                {activeCenterpiece === "video" ? (
+                  <iframe
+                    margin="auto"
+                    height={isDesktop ? dimensions.height - 100 : 490}
+                    width={
+                      isDesktop
+                        ? dimensions.width * 0.75
+                        : dimensions.width - 40
+                    }
+                    src="https://www.youtube.com/embed/iFPokf8mwPk?si=enqAV7tz2QqExC3t"
+                    title="YouTube video player"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen
+                  ></iframe>
+                ) : activeCenterpiece === "table" &&
+                  !!activeTopic &&
+                  !!metricdata ? (
+                  <DataTable
+                    isDesktop={isDesktop}
+                    dimensions={dimensions}
+                    text={text}
+                    activeCategory={activeCategory}
+                    activeTopic={activeTopic}
+                    activeMetric={activeMetric}
+                    activeSolution={activeSolution}
+                    selectionConsoleVisible={selectionConsoleVisible}
+                    metricdata={metricdata}
+                  />
+                ) : activeCenterpiece === "graph" &&
+                  !!activeTopic &&
+                  !!metricdata ? (
+                  <Histogram
+                    isDesktop={isDesktop}
+                    dimensions={dimensions}
+                    text={text}
+                    activeCategory={activeCategory}
+                    activeTopic={activeTopic}
+                    activeMetric={activeMetric}
+                    activeSolution={activeSolution}
+                    selectionConsoleVisible={selectionConsoleVisible}
+                    metricdata={metricdata}
+                  />
+                ) : activeCenterpiece === "map" &&
+                  !!activeTopic &&
+                  !!metricdata ? (
+                  <CityMap
+                    isDesktop={isDesktop}
+                    dimensions={dimensions}
+                    text={text}
+                    activeCategory={activeCategory}
+                    activeTopic={activeTopic}
+                    activeMetric={activeMetric}
+                    activeSolution={activeSolution}
+                    selectionConsoleVisible={selectionConsoleVisible}
+                    setQ1={setQ1}
+                    setMedian={setMedian}
+                    setQ3={setQ3}
+                    metricdata={metricdata}
+                  />
+                ) : activeCenterpiece === "menu" ? (
+                  <Menu
+                    isDesktop={isDesktop}
+                    dimensions={dimensions}
+                    text={text}
+                    activeCategory={activeCategory}
+                    activeTopic={activeTopic}
+                    activeMetric={activeMetric}
+                    activeSolution={activeSolution}
+                    metricdata={metricdata}
+                  />
+                ) : (
+                  <div>comparison goes here</div>
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
         {!!activeSolution ? (
@@ -520,7 +750,7 @@ const App = () => {
             style={{
               zIndex: 3,
               width: isDesktop ? 380 : "100%",
-              backgroundColor: isDesktop ? "rgba(255,255,255,.75)" : "",
+              backgroundColor: "rgba(255,255,255,.75)",
             }}
           >
             <div
@@ -528,7 +758,7 @@ const App = () => {
                 position: "relative",
                 display: "flex",
                 flexDirection: "column",
-                height: isDesktop ? dimensions.height - 1 : 300,
+                height: isDesktop ? dimensions.height - 2 : 300,
                 bottom: 0,
                 backgroundColor: "rgba(0,0,0,.85)",
                 border: "solid 1px #ffffff",

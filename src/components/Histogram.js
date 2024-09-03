@@ -8,41 +8,43 @@ const Histogram = ({
   activeCategory = null,
   activeTopic = null,
   activeMetric = null,
+  activeSolution = null,
+  selectionConsoleVisible = null,
   metricdata = [],
   style = {},
   ...buttonProps
 }) => {
-  const [data, setData] = useState(
-    metricdata.sort((a, b) => b.value - a.value)
-  );
-  const colors = ["#c3b091"];
+  const [data, setData] = useState([]);
 
   const width = isDesktop
-    ? dimensions.width * 0.75 - 215
+    ? dimensions.width -
+      ((!!selectionConsoleVisible ? 250 : 0) +
+        (!!activeSolution ? 250 : 0) +
+        280)
     : dimensions.width - 40;
-  const height = 250;
+  const height = isDesktop ? 300 : 250;
   const paddingLeft = 2; // Shift everything to the right to avoid negative coordinates
   const paddingTop = 75; // Shift everything down to avoid negative coordinates
 
   const svgRef = useRef();
 
   useEffect(() => {
-    if (data && svgRef.current) {
+    setData(metricdata.sort((a, b) => b.value - a.value));
+    if (metricdata.length > 0 && svgRef.current) {
       const svg = d3.select(svgRef.current);
-
       const xScale = d3
         .scaleBand()
-        .domain(data.map((d) => d.section))
+        .domain(metricdata.map((d) => d.section))
         .range([0, width - 40])
         .padding(0); // No gaps between bars
 
       const yScale = d3
         .scaleLinear()
-        .domain([0, d3.max(data, (d) => d.value)])
+        .domain([0, d3.max(metricdata, (d) => d.value)])
         .range([height, 0]);
 
       // Calculate mean and median
-      const values = data.map((d) => d.value);
+      const values = metricdata.map((d) => d.value);
       const mean = d3.mean(values);
       const median = d3.median(values);
 
@@ -53,7 +55,7 @@ const Histogram = ({
       svg
         .append("g")
         .selectAll("rect")
-        .data(data)
+        .data(metricdata)
         .enter()
         .append("rect")
         .attr("x", (d) => xScale(d.section) + paddingLeft)
@@ -94,18 +96,9 @@ const Histogram = ({
         .attr("y2", yScale(mean) + paddingTop)
         .attr("stroke", "#000000")
         .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "4,4")
+        .attr("stroke-dasharray", "6,6")
         .attr("opacity", 0.7)
-        .attr("class", "median-line");
-
-      svg
-        .append("text")
-        .attr("x", width - 106)
-        .attr("y", yScale(mean) + paddingTop - 6)
-        .attr("text-anchor", "start")
-        .text(`Mean: ${mean.toFixed(2)}`)
-        .attr("fill", "#000000")
-        .attr("font-size", "12px");
+        .attr("class", "mean-line");
 
       // Draw median line
       svg
@@ -116,74 +109,76 @@ const Histogram = ({
         .attr("y2", yScale(median) + paddingTop)
         .attr("stroke", "#000000")
         .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "4,4")
+        .attr("stroke-dasharray", "8,6,2,2")
         .attr("opacity", 0.7)
         .attr("class", "median-line");
 
-      svg
-        .append("text")
-        .attr("x", width - 116)
-        .attr("y", yScale(median) + paddingTop - 6)
-        .attr("text-anchor", "start")
-        .text(`Median: ${median.toFixed(2)}`)
-        .attr("fill", "#000000")
-        .attr("font-size", "12px");
-
-      // Draw "Most" line and label
+      // Draw "Max" line and label
       svg
         .append("line")
-        .attr("x1", xScale(data[0].section) + paddingLeft)
-        .attr("x2", xScale(data[0].section) + paddingLeft)
+        .attr("x1", xScale(metricdata[0].section) + paddingLeft)
+        .attr("x2", xScale(metricdata[0].section) + paddingLeft)
         .attr("y1", paddingTop - 50) // Extends 50px above the max bar height
         .attr("y2", height + paddingTop)
         .attr("stroke", "#000000")
         .attr("stroke-width", 2)
-        .attr("class", "most-x-line");
-
-      svg
-        .append("text")
-        .attr("x", xScale(data[0].section) + paddingLeft + 60)
-        .attr("y", paddingTop - 40)
-        .attr("text-anchor", "end")
-        .text(`Most: ${data[0].value}`)
-        .attr("fill", "#000000")
-        .attr("font-size", "12px");
-
-      // Draw "Least" line and label
-      svg
-        .append("line")
-        .attr(
-          "x1",
-          xScale(data[data.length - 1].section) +
-            xScale.bandwidth() +
-            paddingLeft
-        )
-        .attr(
-          "x2",
-          xScale(data[data.length - 1].section) +
-            xScale.bandwidth() +
-            paddingLeft
-        )
-        .attr("y1", paddingTop - 50) // Extends 50px above the max bar height
-        .attr("y2", height + paddingTop)
-        .attr("stroke", "#000000")
-        .attr("stroke-width", 2)
-        .attr("class", "least-x-line");
+        .attr("class", "max-x-line");
 
       svg
         .append("text")
         .attr(
           "x",
-          xScale(data[data.length - 1].section) +
-            xScale.bandwidth() +
+          xScale(metricdata[0].section) +
             paddingLeft +
-            -50
+            8 +
+            (5 + String(metricdata[0].value).length) * 7.5
+        )
+        .attr("y", paddingTop - 40)
+        .attr("text-anchor", "end")
+        .text(`Max: ${metricdata[0].value}`)
+        .attr("fill", "#000000")
+        .attr("font-size", "12px")
+        .attr("font-family", "monospace");
+
+      // Draw "Min" line and label
+      svg
+        .append("line")
+        .attr(
+          "x1",
+          xScale(metricdata[metricdata.length - 1].section) +
+            xScale.bandwidth() +
+            paddingLeft
+        )
+        .attr(
+          "x2",
+          xScale(metricdata[metricdata.length - 1].section) +
+            xScale.bandwidth() +
+            paddingLeft
+        )
+        .attr("y1", paddingTop - 50) // Extends 50px above the max bar height
+        .attr("y2", height + paddingTop)
+        .attr("stroke", "#000000")
+        .attr("stroke-width", 2)
+        .attr("class", "min-x-line");
+
+      svg
+        .append("text")
+        .attr(
+          "x",
+          xScale(metricdata[metricdata.length - 1].section) +
+            xScale.bandwidth() +
+            -(
+              (5 + String(metricdata[metricdata.length - 1].value).length) *
+              7
+            ) -
+            10
         )
         .attr("y", paddingTop - 40)
         .attr("text-anchor", "start")
-        .text(`Least: ${data[data.length - 1].value}`)
+        .text(`Min: ${metricdata[metricdata.length - 1].value}`)
         .attr("fill", "#000000")
-        .attr("font-size", "12px");
+        .attr("font-size", "12px")
+        .attr("font-family", "monospace");
 
       svg
         .append("line")
@@ -194,15 +189,71 @@ const Histogram = ({
         .attr("stroke", "#000000")
         .attr("stroke-width", 2)
         .attr("class", "bottom-line");
+
+      // Draw key
+
+      svg
+        .append("text")
+        .attr("x", paddingLeft - 1)
+        .attr("y", height + 95)
+        .attr("text-anchor", "start")
+        .text(`Mean: ${mean?.toFixed(2)}`)
+        .attr("fill", "#000000")
+        .attr("font-size", "12px")
+        .attr("font-family", "monospace");
+
+      svg
+        .append("line")
+        .attr("x1", paddingLeft - 1)
+        .attr("x2", 150)
+        .attr("y1", height + 100)
+        .attr("y2", height + 100)
+        .attr("stroke", "#000000")
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "6,6")
+        .attr("opacity", 0.7)
+        .attr("class", "mean-line-key");
+
+      svg
+        .append("text")
+        .attr("x", paddingLeft - 1 + 170)
+        .attr("y", height + 95)
+        .attr("text-anchor", "start")
+        .text(`Median: ${median}`)
+        .attr("fill", "#000000")
+        .attr("font-size", "12px")
+        .attr("font-family", "monospace");
+
+      svg
+        .append("line")
+        .attr("x1", paddingLeft - 1 + 170)
+        .attr("x2", paddingLeft - 1 + 170 + 150)
+        .attr("y1", height + 100)
+        .attr("y2", height + 100)
+        .attr("stroke", "#000000")
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "8,6,2,2")
+        .attr("opacity", 0.7)
+        .attr("class", "median-line-key");
     }
-  }, [data, dimensions.width, activeMetric, activeCategory, activeTopic]);
+  }, [
+    metricdata,
+    dimensions.width,
+    activeMetric,
+    activeCategory,
+    activeTopic,
+    activeSolution,
+    selectionConsoleVisible,
+  ]);
 
   return (
     <svg
       ref={svgRef}
       width={width - 36}
-      height={height + paddingTop + 50}
-      style={{ marginLeft: 0 }}
+      height={height + paddingTop + 90}
+      style={{
+        marginLeft: 0,
+      }}
     ></svg>
   );
 };

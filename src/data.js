@@ -14,7 +14,7 @@ const text = {
     // some sample categories for different topics
     infrastructure: {
       title: "Infrastructure",
-      topics: ["Road Maintenence", "Builing Code Violations", "third"],
+      topics: ["Median Income"], //["Road Maintenence", "Builing Code Violations", "third"],
       colors: [
         "#034694", // Root color (Blue)
         "#4468A1", // Slightly lighter blue
@@ -25,7 +25,7 @@ const text = {
     },
     health: {
       title: "Health",
-      topics: ["Air Pollution", "Noise Pollution"],
+      topics: ["Healthcare Workers"], //["Air Pollution", "Noise Pollution"],
       colors: [
         "#D2122E", // Root color (Red)
         "#DC4A5D", // Slightly lighter red
@@ -36,7 +36,7 @@ const text = {
     },
     environment: {
       title: "Environment",
-      topics: ["Extreme Heat", "Flooding"],
+      topics: [], //["Extreme Heat", "Flooding"],
       colors: [
         "#4B6F44", // Root color (Green)
         "#73896C", // Slightly lighter green
@@ -47,7 +47,7 @@ const text = {
     },
     transportation: {
       title: "Transportation",
-      topics: ["Bus Lanes", "Sidewalks"],
+      topics: [], // ["Bus Lanes", "Sidewalks"],
       colors: [
         "#FFC72C", // Root color (Yellow)
         "#FFD764", // Slightly lighter yellow

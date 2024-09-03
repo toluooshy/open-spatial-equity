@@ -5,21 +5,6 @@ import "mapbox-gl/dist/mapbox-gl.css";
 mapboxgl.accessToken =
   "pk.eyJ1IjoidG9sdW9vc2h5IiwiYSI6ImNsem44NmU0bjBsemkybHBuMmtqOGxuMmMifQ.9QVijevpo9rKZ7aO925FTw";
 
-function generateRandomColorsets() {
-  const allNumbers = Array.from({ length: 174 }, (_, i) => i + 1); // Create an array [1, 2, 3, ..., 174]
-  const shuffleArray = (arr) => arr.sort(() => Math.random() - 0.5);
-
-  shuffleArray(allNumbers);
-
-  const colorset1 = allNumbers.slice(0, 20);
-  const colorset2 = allNumbers.slice(20, 40);
-  const colorset3 = allNumbers.slice(40, 60);
-  const colorset4 = allNumbers.slice(60, 80);
-  const colorset5 = allNumbers.slice(80, 100);
-
-  return { colorset1, colorset2, colorset3, colorset4, colorset5 };
-}
-
 const CityMap = ({
   isDesktop = false,
   dimensions = {},
@@ -27,6 +12,11 @@ const CityMap = ({
   activeCategory = null,
   activeTopic = null,
   activeMetric = null,
+  activeSolution = null,
+  selectionConsoleVisible = null,
+  setQ1 = null,
+  setMedian = null,
+  setQ3 = null,
   metricdata = [],
   style = {},
   ...buttonProps
@@ -34,10 +24,47 @@ const CityMap = ({
   const [wardsGeoJSON, setWardsGeoJSON] = useState(null);
   const [neighbourhoodsGeoJSON, setNeighbourhoodsGeoJSON] = useState(null);
 
+  const generateColorsets = (data) => {
+    // Extract the values and sort them
+    const values = data
+      .map((obj) => parseFloat(obj.value))
+      .sort((a, b) => a - b);
+
+    // Calculate quartiles
+    const Q1 = values[Math.floor(values.length / 4)];
+    setQ1(Q1);
+    const median = values[Math.floor(values.length / 2)];
+    setMedian(median);
+    const Q3 = values[Math.floor((values.length * 3) / 4)];
+    setQ3(Q3);
+
+    // Initialize the color sets
+    const colorset1 = [];
+    const colorset2 = [];
+    const colorset3 = [];
+    const colorset4 = [];
+
+    // Sort ids into color sets based on value
+    data.forEach((obj) => {
+      const value = parseFloat(obj.value);
+      if (value <= Q1) {
+        colorset4.push(Number(obj.section));
+      } else if (value <= median) {
+        colorset3.push(Number(obj.section));
+      } else if (value <= Q3) {
+        colorset2.push(Number(obj.section));
+      } else {
+        colorset1.push(Number(obj.section));
+      }
+    });
+    // Return the color sets
+    return { colorset1, colorset2, colorset3, colorset4 };
+  };
+
   useEffect(() => {
     const files = [
-      `${process.env.PUBLIC_URL}/data/maps/TorontoWards.geojson`,
-      `${process.env.PUBLIC_URL}/data/maps/TorontoNeighbourhoods.geojson`,
+      `${process.env.PUBLIC_URL}/files/maps/TorontoWards.geojson`,
+      `${process.env.PUBLIC_URL}/files/maps/TorontoNeighbourhoods.geojson`,
     ];
 
     Promise.all(files.map((file) => fetch(file).then((res) => res.json())))
@@ -49,14 +76,11 @@ const CityMap = ({
   }, []);
 
   const center = [-79.3832, 43.74]; // center coordinates of the city
-  const zoom = 9;
+  const zoom = 8;
   const bounds = [
-    [center[0] - 0.27, center[1] - 0.17], // southwest corner
-    [center[0] + 0.27, center[1] + 0.12], // northeast corner
+    [center[0] - 0.28, center[1] - 0.19], // southwest corner
+    [center[0] + 0.29, center[1] + 0.15], // northeast corner
   ];
-
-  const { colorset1, colorset2, colorset3, colorset4, colorset5 } =
-    generateRandomColorsets();
 
   const mapContainerRef = useRef(null);
   const mapData =
@@ -65,6 +89,9 @@ const CityMap = ({
       : neighbourhoodsGeoJSON;
 
   useEffect(() => {
+    const { colorset1, colorset2, colorset3, colorset4 } =
+      generateColorsets(metricdata);
+
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/light-v10",
@@ -99,20 +126,12 @@ const CityMap = ({
               ["literal", colorset1],
             ],
             !!activeCategory
-              ? text.categories[activeCategory.title.toLowerCase()].colors[0]
-              : text.categories["infrastructure"].colors[0],
-            [
-              "in",
-              ["to-number", ["get", "AREA_SHORT_CODE"]],
-              ["literal", colorset2],
-            ],
-            !!activeCategory
               ? text.categories[activeCategory.title.toLowerCase()].colors[1]
               : text.categories["infrastructure"].colors[1],
             [
               "in",
               ["to-number", ["get", "AREA_SHORT_CODE"]],
-              ["literal", colorset3],
+              ["literal", colorset2],
             ],
             !!activeCategory
               ? text.categories[activeCategory.title.toLowerCase()].colors[2]
@@ -120,7 +139,7 @@ const CityMap = ({
             [
               "in",
               ["to-number", ["get", "AREA_SHORT_CODE"]],
-              ["literal", colorset4],
+              ["literal", colorset3],
             ],
             !!activeCategory
               ? text.categories[activeCategory.title.toLowerCase()].colors[3]
@@ -128,7 +147,7 @@ const CityMap = ({
             [
               "in",
               ["to-number", ["get", "AREA_SHORT_CODE"]],
-              ["literal", colorset5],
+              ["literal", colorset4],
             ],
             !!activeCategory
               ? text.categories[activeCategory.title.toLowerCase()].colors[4]
@@ -180,12 +199,17 @@ const CityMap = ({
       });
     });
 
-    console.log(wardsGeoJSON);
-    console.log(mapData);
-
     // Clean up on unmount
     return () => map.remove();
-  }, [mapData, activeMetric, activeCategory, activeTopic]);
+  }, [
+    mapData,
+    metricdata,
+    activeMetric,
+    activeCategory,
+    activeTopic,
+    activeSolution,
+    selectionConsoleVisible,
+  ]);
 
   return (
     <div>
@@ -194,9 +218,12 @@ const CityMap = ({
           ref={mapContainerRef}
           style={{
             marginTop: 6,
-            height: isDesktop ? dimensions.height - 120 : 490,
+            height: isDesktop ? dimensions.height - 100 : 430,
             width: isDesktop
-              ? dimensions.width * 0.75 - 250
+              ? dimensions.width -
+                ((!!selectionConsoleVisible ? 250 : 0) +
+                  (!!activeSolution ? 250 : 0) +
+                  310)
               : dimensions.width - 40,
           }}
         />

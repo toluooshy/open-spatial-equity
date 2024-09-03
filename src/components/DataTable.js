@@ -9,6 +9,8 @@ const DataTable = ({
   activeCategory = null,
   activeTopic = null,
   activeMetric = null,
+  activeSolution = null,
+  selectionConsoleVisible = null,
   metricdata = [],
   style = {},
   ...buttonProps
@@ -21,7 +23,10 @@ const DataTable = ({
       <table
         style={{
           width: isDesktop
-            ? dimensions.width * 0.75 - 270
+            ? dimensions.width -
+              ((!!selectionConsoleVisible ? 250 : 0) +
+                (!!activeSolution ? 250 : 0) +
+                280)
             : dimensions.width - 40,
           borderCollapse: "collapse",
         }}
