@@ -578,7 +578,10 @@ const App = () => {
                 style={{
                   position: "relative",
                   textAlign: "center",
-                  margin: 0,
+                  marginTop:
+                    (activeCenterpiece === "video" ||
+                      activeCenterpiece === "menu") &&
+                    40,
                 }}
               >
                 {activeView === "city_data" ||
@@ -594,8 +597,9 @@ const App = () => {
                     </div>
                   </div>
                 ) : null}
-                {activeView === "city_data" ||
-                (activeView === "community_profiles" && !!activeTopic) ? (
+                {!!activeCategory &&
+                (activeView === "city_data" ||
+                  (activeView === "community_profiles" && !!activeTopic)) ? (
                   <div style={{ display: "flex" }}>
                     {centerpieceOptions.map((icon, index) => (
                       <div
@@ -739,7 +743,7 @@ const App = () => {
                     metricdata={metricdata}
                   />
                 ) : (
-                  <div>comparison goes here</div>
+                  <div>Click a category to explore its data!</div>
                 )}
               </div>
             ) : null}

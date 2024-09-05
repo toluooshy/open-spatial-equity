@@ -20,7 +20,7 @@ const Histogram = ({
     ? dimensions.width -
       ((!!selectionConsoleVisible ? 250 : 0) +
         (!!activeSolution ? 250 : 0) +
-        280)
+        310)
     : dimensions.width - 40;
   const height = isDesktop ? 300 : 250;
   const paddingLeft = 2; // Shift everything to the right to avoid negative coordinates
