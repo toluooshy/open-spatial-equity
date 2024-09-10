@@ -19,6 +19,7 @@ const App = () => {
   const [activeCategory, setActiveCategory] = useState("");
   const [activeTopic, setActiveTopic] = useState("");
   const [activeSolution, setActiveSolution] = useState("");
+  const [activeBoroughs, setActiveBoroughs] = useState(false);
 
   const [q1, setQ1] = useState();
   const [median, setMedian] = useState();
@@ -26,6 +27,8 @@ const App = () => {
 
   const [activeCenterpiece, setActiveCenterpiece] = useState("video"); // video, table, graph, map, or comparison - depending on view and user selection
   const [metricdata, setMetricdata] = useState([]);
+  const [neighbourhoods, setNeighbourhoods] = useState({});
+  const [subdivisions, setSubdivisions] = useState({});
 
   const datasets = {
     Infrastructure: {
@@ -54,7 +57,7 @@ const App = () => {
   const centerpieceOptions =
     activeView === "city_data" ? ["🔢", "📊", "🗺"] : ["📊", "🗺"];
 
-  const convertCSVToArray = (data) => {
+  const csvToArray = (data) => {
     const names = data[0];
     const ids = data[1];
     const values = data[2];
@@ -68,14 +71,38 @@ const App = () => {
     return result;
   };
 
+  const csvToObject = (data) => {
+    const result = {};
+    data.forEach((entry) => {
+      result[entry[0]] = {
+        name: entry[1].trim(),
+        borough: entry[2].trim(),
+      };
+    });
+
+    return result;
+  };
+
   useEffect(() => {
-    console.log(
-      `${process.env.PUBLIC_URL}${
-        datasets[activeCategory?.title]?.[activeTopic]?.[
-          activeMetric === "city_subdivision" ? 0 : 1
-        ]
-      }`
-    );
+    const fetchData = async (path, setMetric) => {
+      await fetch(`${process.env.PUBLIC_URL}${path}`)
+        .then((response) => response.text())
+        .then((text) => {
+          // Parse the CSV text using PapaParse
+          Papa.parse(text, {
+            complete: (result) => {
+              const parsedData = csvToObject(result.data);
+              setMetric(parsedData);
+            },
+            header: false, // No headers in CSV
+          });
+        });
+    };
+    fetchData("/files/maps/TorontoNeighbourhoods.csv", setNeighbourhoods);
+    fetchData("/files/maps/TorontoWards.csv", setSubdivisions);
+  }, []);
+
+  useEffect(() => {
     if (!!activeTopic && !!activeCategory) {
       // Fetch the CSV file from the public folder
       const fetchData = async () => {
@@ -91,7 +118,7 @@ const App = () => {
             // Parse the CSV text using PapaParse
             Papa.parse(text, {
               complete: (result) => {
-                const parsedData = convertCSVToArray(result.data);
+                const parsedData = csvToArray(result.data);
                 setMetricdata(parsedData.sort((a, b) => b.value - a.value));
               },
               header: false, // No headers in CSV
@@ -100,7 +127,13 @@ const App = () => {
       };
       fetchData();
     }
-  }, [activeTopic, activeCategory, activeMetric]);
+  }, [
+    activeTopic,
+    activeCategory,
+    activeMetric,
+    activeCenterpiece,
+    activeBoroughs,
+  ]);
 
   const openInNewTab = (url) => {
     window.open(url, "_blank", "noreferrer");
@@ -631,6 +664,52 @@ const App = () => {
                         {icon}
                       </div>
                     ))}
+                    <div
+                      style={{
+                        color: "#ffffff",
+                        backgroundColor: "#000000",
+                        borderRadius: 4,
+                        marginTop: 4,
+                        marginBottom: 4,
+                        marginLeft: 4,
+                        marginRight: 6,
+                        padding: 4,
+                        fontSize: 12,
+                        width: 100,
+                        height: 14,
+                        textAlign: "center",
+                        alignContent: "center",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        setActiveBoroughs(!activeBoroughs);
+                      }}
+                    >
+                      {!activeBoroughs ? "Show Boroughs" : "Hide Boroughs"}
+                    </div>
+                    <div
+                      style={{
+                        color: "#ffffff",
+                        backgroundColor: "#000000",
+                        borderRadius: 4,
+                        marginTop: 4,
+                        marginBottom: 4,
+                        marginLeft: 4,
+                        marginRight: 6,
+                        padding: 4,
+                        fontSize: 12,
+                        width: 100,
+                        height: 14,
+                        textAlign: "center",
+                        alignContent: "center",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        setActiveSolution(!activeSolution ? activeTopic : "");
+                      }}
+                    >
+                      {!activeSolution ? "Show Solutions" : "Hide Solutions"}
+                    </div>
                     {/* mobile metrics selector */}
                     {!isDesktop ? (
                       <div
@@ -673,11 +752,9 @@ const App = () => {
                 {activeCenterpiece === "video" ? (
                   <iframe
                     margin="auto"
-                    height={isDesktop ? dimensions.height - 100 : 490}
+                    height={isDesktop ? dimensions.height - 80 : 490}
                     width={
-                      isDesktop
-                        ? dimensions.width * 0.75
-                        : dimensions.width - 40
+                      isDesktop ? dimensions.width - 280 : dimensions.width - 40
                     }
                     src="https://www.youtube.com/embed/iFPokf8mwPk?si=enqAV7tz2QqExC3t"
                     title="YouTube video player"
@@ -697,8 +774,11 @@ const App = () => {
                     activeTopic={activeTopic}
                     activeMetric={activeMetric}
                     activeSolution={activeSolution}
+                    activeBoroughs={activeBoroughs}
                     selectionConsoleVisible={selectionConsoleVisible}
                     metricdata={metricdata}
+                    neighbourhoods={neighbourhoods}
+                    subdivisions={subdivisions}
                   />
                 ) : activeCenterpiece === "graph" &&
                   !!activeTopic &&
@@ -711,8 +791,11 @@ const App = () => {
                     activeTopic={activeTopic}
                     activeMetric={activeMetric}
                     activeSolution={activeSolution}
+                    activeBoroughs={activeBoroughs}
                     selectionConsoleVisible={selectionConsoleVisible}
                     metricdata={metricdata}
+                    neighbourhoods={neighbourhoods}
+                    subdivisions={subdivisions}
                   />
                 ) : activeCenterpiece === "map" &&
                   !!activeTopic &&
@@ -725,11 +808,14 @@ const App = () => {
                     activeTopic={activeTopic}
                     activeMetric={activeMetric}
                     activeSolution={activeSolution}
+                    activeBoroughs={activeBoroughs}
                     selectionConsoleVisible={selectionConsoleVisible}
                     setQ1={setQ1}
                     setMedian={setMedian}
                     setQ3={setQ3}
                     metricdata={metricdata}
+                    neighbourhoods={neighbourhoods}
+                    subdivisions={subdivisions}
                   />
                 ) : activeCenterpiece === "menu" ? (
                   <Menu
@@ -739,8 +825,9 @@ const App = () => {
                     activeCategory={activeCategory}
                     activeTopic={activeTopic}
                     activeMetric={activeMetric}
-                    activeSolution={activeSolution}
                     metricdata={metricdata}
+                    neighbourhoods={neighbourhoods}
+                    subdivisions={subdivisions}
                   />
                 ) : (
                   <div>Click a category to explore its data!</div>

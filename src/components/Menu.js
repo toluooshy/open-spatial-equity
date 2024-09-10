@@ -11,6 +11,8 @@ const Menu = ({
   activeTopic = null,
   activeMetric = null,
   metricdata = [],
+  neighbourhoods = {},
+  subdivisions = {},
   style = {},
   ...buttonProps
 }) => {

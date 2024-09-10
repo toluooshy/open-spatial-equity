@@ -13,15 +13,18 @@ const CityMap = ({
   activeTopic = null,
   activeMetric = null,
   activeSolution = null,
+  activeBoroughs = false,
   selectionConsoleVisible = null,
   setQ1 = null,
   setMedian = null,
   setQ3 = null,
   metricdata = [],
+  neighbourhoods = {},
+  subdivisions = {},
   style = {},
   ...buttonProps
 }) => {
-  const [wardsGeoJSON, setWardsGeoJSON] = useState(null);
+  const [subdivisionsGeoJSON, setSubdivisionsGeoJSON] = useState(null);
   const [neighbourhoodsGeoJSON, setNeighbourhoodsGeoJSON] = useState(null);
 
   const generateColorsets = (data) => {
@@ -68,8 +71,8 @@ const CityMap = ({
     ];
 
     Promise.all(files.map((file) => fetch(file).then((res) => res.json())))
-      .then(([wardsData, neighbourhoodsData]) => {
-        setWardsGeoJSON(wardsData);
+      .then(([subdivisionsData, neighbourhoodsData]) => {
+        setSubdivisionsGeoJSON(subdivisionsData);
         setNeighbourhoodsGeoJSON(neighbourhoodsData);
       })
       .catch((error) => console.error("Failed to fetch GeoJSON files:", error));
@@ -83,9 +86,13 @@ const CityMap = ({
   ];
 
   const mapContainerRef = useRef(null);
+  const tooltipRef = useRef(
+    new mapboxgl.Popup({ closeButton: false, closeOnClick: false })
+  );
+
   const mapData =
     text.metrics[activeMetric] === text.metrics["city_subdivision"]
-      ? wardsGeoJSON
+      ? subdivisionsGeoJSON
       : neighbourhoodsGeoJSON;
 
   useEffect(() => {
@@ -104,18 +111,18 @@ const CityMap = ({
     // Add navigation control (zoom and rotation buttons)
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
-    // Load the wards GeoJSON data
+    // Load the subdivisions GeoJSON data
     map.on("load", () => {
-      map.addSource("wards", {
+      map.addSource("sections", {
         type: "geojson",
         data: mapData,
       });
 
-      // Add a layer to display the wards
+      // Add a layer to display the sections
       map.addLayer({
-        id: "wards-layer",
+        id: "sections-layer",
         type: "fill",
-        source: "wards",
+        source: "sections",
         layout: {},
         paint: {
           "fill-color": [
@@ -160,9 +167,9 @@ const CityMap = ({
 
       // Add a layer for the ward boundaries
       map.addLayer({
-        id: "wards-borders",
+        id: "sections-borders",
         type: "line",
-        source: "wards",
+        source: "sections",
         layout: {},
         paint: {
           "line-color": "#000000", // Black color for the borders
@@ -172,13 +179,13 @@ const CityMap = ({
 
       // Add a label layer that appears on hover
       map.addLayer({
-        id: "wards-labels",
+        id: "sections-labels",
         type: "symbol",
-        source: "wards",
+        source: "sections",
         layout: {
           "text-field": ["get", "AREA_NAME"], // Assumes the GeoJSON has a 'ward_name' property
           "text-font": ["Arial Unicode MS Regular"],
-          "text-size": 6,
+          "text-size": 8,
           "text-anchor": "top",
           visibility: "none", // Start with labels hidden
         },
@@ -188,14 +195,39 @@ const CityMap = ({
       });
 
       // Show labels on hover
-      map.on("mouseenter", "wards-layer", (e) => {
-        map.setLayoutProperty("wards-labels", "visibility", "visible");
+      map.on("mouseenter", "sections-layer", (e) => {
+        map.setLayoutProperty("sections-labels", "visibility", "visible");
         map.getCanvas().style.cursor = "pointer";
       });
 
-      map.on("mouseleave", "wards-layer", () => {
-        map.setLayoutProperty("wards-labels", "visibility", "none");
+      map.on("mouseleave", "sections-layer", () => {
+        map.setLayoutProperty("sections-labels", "visibility", "none");
         map.getCanvas().style.cursor = "";
+      });
+
+      // Tooltip on hover
+      map.on("mousemove", "sections-layer", (e) => {
+        const feature = e.features[0];
+        if (feature) {
+          tooltipRef.current
+            .setLngLat(e.lngLat)
+            .setHTML(
+              `${feature.properties.AREA_NAME} <br/>(${
+                activeMetric === "city_subdivision" ? "Ward " : "Neighbourhood "
+              }${Number(feature.properties.AREA_SHORT_CODE)}) <br/>${
+                metricdata.find(
+                  (item) =>
+                    item.section ===
+                    String(Number(feature.properties.AREA_SHORT_CODE))
+                ).value
+              }`
+            )
+            .addTo(map);
+        }
+      });
+
+      map.on("mouseleave", "sections-layer", () => {
+        tooltipRef.current.remove();
       });
     });
 

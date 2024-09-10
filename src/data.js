@@ -10,6 +10,14 @@ const text = {
     city_subdivision: "Wards", // the wards of the city
     city_neighbourhood: "Neighbourhoods", // the neighbourhoods of a city
   },
+  boroughs: {
+    Etobicoke: "#D4DA3C",
+    "East York": "#E0E0A5",
+    "North York": "#3484B4",
+    "Old Toronto": "#FC7A3C",
+    Scarborough: "#6F3487",
+    York: "#383838",
+  },
   categories: {
     // some sample categories for different topics
     infrastructure: {

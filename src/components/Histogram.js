@@ -9,20 +9,24 @@ const Histogram = ({
   activeTopic = null,
   activeMetric = null,
   activeSolution = null,
+  activeBoroughs = false,
   selectionConsoleVisible = null,
   metricdata = [],
+  neighbourhoods = {},
+  subdivisions = {},
   style = {},
   ...buttonProps
 }) => {
   const [data, setData] = useState([]);
 
   const width = isDesktop
-    ? dimensions.width -
+    ? dimensions.width +
+      36 -
       ((!!selectionConsoleVisible ? 250 : 0) +
         (!!activeSolution ? 250 : 0) +
         310)
-    : dimensions.width - 40;
-  const height = isDesktop ? 300 : 250;
+    : dimensions.width - 4;
+  const height = isDesktop ? dimensions.height - 180 : 250;
   const paddingLeft = 2; // Shift everything to the right to avoid negative coordinates
   const paddingTop = 75; // Shift everything down to avoid negative coordinates
 
@@ -62,24 +66,66 @@ const Histogram = ({
         .attr("y", (d) => yScale(d.value) + paddingTop)
         .attr("width", xScale.bandwidth())
         .attr("height", (d) => height - yScale(d.value))
-        .attr(
-          "fill",
-          !!activeCategory
-            ? text.categories[activeCategory.title.toLowerCase()].colors[1]
-            : text.categories["infrastructure"].colors[1]
-        )
+        .attr("fill", (d) => {
+          if (activeBoroughs) {
+            if (!!text.boroughs) {
+              return activeMetric === "city_subdivision"
+                ? text?.boroughs?.[subdivisions[d.section]?.borough]
+                : text?.boroughs?.[neighbourhoods[d.section]?.borough];
+            } else {
+              return text?.categories["infrastructure"].colors[1];
+            }
+          } else {
+            return !!activeCategory
+              ? text?.categories[activeCategory.title.toLowerCase()].colors[1]
+              : text?.categories["infrastructure"].colors[1];
+          }
+        })
         .on("mouseover", function (event, d) {
           d3.select(this).attr("opacity", ".5");
 
-          // Tooltip on hover
-          svg
+          // Tooltip on hover with multiline text using <tspan>
+          const tooltipText = `${
+            activeMetric === "city_subdivision"
+              ? subdivisions[d.section].name
+              : neighbourhoods[d.section].name
+          }\n(${
+            activeMetric === "city_subdivision" ? "Ward " : "Neighbourhood "
+          }${d.section})\n${d.value}`;
+
+          // Calculate initial x position for tooltip
+          let tooltipX =
+            xScale(d.section) + xScale.bandwidth() / 2 + paddingLeft;
+
+          // Check if the tooltip goes off the left or right side of the graph
+          const tooltipWidth = 150; // You can adjust this based on expected tooltip width
+          const graphWidth = width - 25; // Or use the actual graph width
+
+          if (tooltipX + tooltipWidth / 2 > graphWidth) {
+            tooltipX = graphWidth - tooltipWidth / 2; // Adjust to keep within right bound
+          } else if (tooltipX - tooltipWidth / 2 < 0) {
+            tooltipX = tooltipWidth / 2; // Adjust to keep within left bound
+          }
+
+          // Append the text element for the tooltip
+          const tooltip = svg
             .append("text")
             .attr("class", "tooltip")
-            .attr("x", xScale(d.section) + xScale.bandwidth() / 2 + paddingLeft)
+            .attr("x", tooltipX)
             .attr("y", yScale(d.value) - 5 + paddingTop)
             .attr("text-anchor", "middle")
-            .text(`${d.section}: ${d.value}`)
-            .attr("fill", "#000000");
+            .attr("fill", "#000000")
+            .attr("font-size", "12px");
+
+          // Split text by newline and append each line as a <tspan>
+          const lines = tooltipText.split("\n");
+          lines.forEach((line, index) => {
+            tooltip
+              .append("tspan")
+              .text(line)
+              .attr("x", tooltip.attr("x")) // Align each line horizontally
+              .attr("dy", index === 0 ? 0 : "1.2em"); // Add spacing between lines
+          });
         })
         .on("mouseout", function (event, d) {
           d3.select(this).attr("opacity", "1");
@@ -243,6 +289,7 @@ const Histogram = ({
     activeCategory,
     activeTopic,
     activeSolution,
+    activeBoroughs,
     selectionConsoleVisible,
   ]);
 

@@ -10,8 +10,11 @@ const DataTable = ({
   activeTopic = null,
   activeMetric = null,
   activeSolution = null,
+  activeBoroughs = false,
   selectionConsoleVisible = null,
   metricdata = [],
+  neighbourhoods = {},
+  subdivisions = {},
   style = {},
   ...buttonProps
 }) => {
@@ -19,14 +22,14 @@ const DataTable = ({
   const sortedData = metricdata.sort((a, b) => b.value - a.value);
 
   return (
-    <div style={{ padding: 10, ...style }}>
+    <div style={{ ...style }}>
       <table
         style={{
           width: isDesktop
             ? dimensions.width -
               ((!!selectionConsoleVisible ? 250 : 0) +
                 (!!activeSolution ? 250 : 0) +
-                280)
+                310)
             : dimensions.width - 40,
           borderCollapse: "collapse",
         }}
