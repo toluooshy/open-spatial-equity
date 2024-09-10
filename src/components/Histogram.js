@@ -26,7 +26,11 @@ const Histogram = ({
         (!!activeSolution ? 250 : 0) +
         310)
     : dimensions.width - 4;
-  const height = isDesktop ? dimensions.height - 180 : 250;
+  const height = isDesktop
+    ? !activeBoroughs
+      ? dimensions.height - 180
+      : dimensions.height - 250
+    : 250;
   const paddingLeft = 2; // Shift everything to the right to avoid negative coordinates
   const paddingTop = 75; // Shift everything down to avoid negative coordinates
 
@@ -241,7 +245,7 @@ const Histogram = ({
       svg
         .append("text")
         .attr("x", paddingLeft - 1)
-        .attr("y", height + 95)
+        .attr("y", height + 100)
         .attr("text-anchor", "start")
         .text(`Mean: ${mean?.toFixed(2)}`)
         .attr("fill", "#000000")
@@ -252,8 +256,8 @@ const Histogram = ({
         .append("line")
         .attr("x1", paddingLeft - 1)
         .attr("x2", 150)
-        .attr("y1", height + 100)
-        .attr("y2", height + 100)
+        .attr("y1", height + 105)
+        .attr("y2", height + 105)
         .attr("stroke", "#000000")
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "6,6")
@@ -263,7 +267,7 @@ const Histogram = ({
       svg
         .append("text")
         .attr("x", paddingLeft - 1 + 170)
-        .attr("y", height + 95)
+        .attr("y", height + 100)
         .attr("text-anchor", "start")
         .text(`Median: ${median}`)
         .attr("fill", "#000000")
@@ -274,13 +278,35 @@ const Histogram = ({
         .append("line")
         .attr("x1", paddingLeft - 1 + 170)
         .attr("x2", paddingLeft - 1 + 170 + 150)
-        .attr("y1", height + 100)
-        .attr("y2", height + 100)
+        .attr("y1", height + 105)
+        .attr("y2", height + 105)
         .attr("stroke", "#000000")
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "8,6,2,2")
         .attr("opacity", 0.7)
         .attr("class", "median-line-key");
+
+      if (activeBoroughs) {
+        Object.keys(text?.boroughs).map((borough, index) => {
+          svg
+            .append("text")
+            .attr("x", paddingLeft + 20 + index * 115 - (index > 2 ? 345 : 0))
+            .attr("y", height + 137.5 + (index > 2 ? 25 : 0))
+            .attr("text-anchor", "start")
+            .text(`${borough}`)
+            .attr("fill", "#000000")
+            .attr("font-size", "12px")
+            .attr("font-family", "monospace");
+
+          svg
+            .append("rect")
+            .attr("x", paddingLeft + index * 115 - (index > 2 ? 345 : 0))
+            .attr("y", height + 125 + (index > 2 ? 25 : 0))
+            .attr("width", 15)
+            .attr("height", 15)
+            .attr("fill", `${text?.boroughs[borough]}`);
+        });
+      }
     }
   }, [
     metricdata,

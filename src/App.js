@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+
 import Papa from "papaparse";
 import text from "./data";
 import background from "./graphics/branding/background.png";
@@ -10,11 +12,14 @@ import Menu from "./components/Menu";
 import { useWindowDimensions } from "./utils/CustomHooks";
 
 const App = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const dimensions = useWindowDimensions();
   const isDesktop = dimensions.width > 1024;
 
   const [selectionConsoleVisible, setSelectionConsoleVisible] = useState(false);
   const [activeView, setActiveView] = useState("portal");
+  const [activeCenterpiece, setActiveCenterpiece] = useState("video"); // video, table, graph, map, or comparison - depending on view and user selection
   const [activeMetric, setActiveMetric] = useState("city_subdivision");
   const [activeCategory, setActiveCategory] = useState("");
   const [activeTopic, setActiveTopic] = useState("");
@@ -25,7 +30,6 @@ const App = () => {
   const [median, setMedian] = useState();
   const [q3, setQ3] = useState();
 
-  const [activeCenterpiece, setActiveCenterpiece] = useState("video"); // video, table, graph, map, or comparison - depending on view and user selection
   const [metricdata, setMetricdata] = useState([]);
   const [neighbourhoods, setNeighbourhoods] = useState({});
   const [subdivisions, setSubdivisions] = useState({});
@@ -82,6 +86,66 @@ const App = () => {
 
     return result;
   };
+
+  // Sync state with URL when the component loads
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+
+    if (params.get("selectionConsoleVisible") !== null) {
+      setSelectionConsoleVisible(
+        params.get("selectionConsoleVisible") === "true"
+      );
+    }
+    if (params.get("activeView")) {
+      setActiveView(params.get("activeView"));
+    }
+    if (params.get("activeCenterpiece")) {
+      setActiveCenterpiece(params.get("activeCenterpiece"));
+    }
+    if (params.get("activeMetric")) {
+      setActiveMetric(params.get("activeMetric"));
+    }
+    if (params.get("activeCategory")) {
+      setActiveCategory(
+        text.categories[params.get("activeCategory")?.toLowerCase()]
+      );
+    }
+    if (params.get("activeTopic")) {
+      setActiveTopic(params.get("activeTopic")?.replace("+", " "));
+    }
+    if (params.get("activeSolution")) {
+      setActiveSolution(params.get("activeSolution")?.replace("+", " "));
+    }
+    if (params.get("activeBoroughs") !== null) {
+      setActiveBoroughs(params.get("activeBoroughs") === "true");
+    }
+  }, []);
+
+  // Sync URL when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    params.set("selectionConsoleVisible", selectionConsoleVisible);
+    params.set("activeView", activeView);
+    params.set("activeCenterpiece", activeCenterpiece);
+    params.set("activeMetric", activeMetric);
+    params.set("activeCategory", activeCategory?.title?.toLowerCase());
+    params.set("activeTopic", activeTopic);
+    params.set("activeSolution", activeSolution);
+    params.set("activeBoroughs", activeBoroughs);
+
+    // Update URL with new search params
+    navigate({ search: params.toString() }, { replace: true });
+  }, [
+    selectionConsoleVisible,
+    activeView,
+    activeCenterpiece,
+    activeMetric,
+    activeCategory,
+    activeTopic,
+    activeSolution,
+    activeBoroughs,
+  ]);
 
   useEffect(() => {
     const fetchData = async (path, setMetric) => {
@@ -664,9 +728,34 @@ const App = () => {
                         {icon}
                       </div>
                     ))}
+                    {activeCenterpiece === "graph" ? (
+                      <div
+                        style={{
+                          color: !activeBoroughs ? "#ffffff" : "#888888",
+                          backgroundColor: "#000000",
+                          borderRadius: 4,
+                          marginTop: 4,
+                          marginBottom: 4,
+                          marginLeft: 4,
+                          marginRight: 6,
+                          padding: 4,
+                          fontSize: 11,
+                          width: 100,
+                          height: 14,
+                          textAlign: "center",
+                          alignContent: "center",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => {
+                          setActiveBoroughs(!activeBoroughs);
+                        }}
+                      >
+                        {!activeBoroughs ? "Show Boroughs" : "Hide Boroughs"}
+                      </div>
+                    ) : null}
                     <div
                       style={{
-                        color: "#ffffff",
+                        color: !activeSolution ? "#ffffff" : "#888888",
                         backgroundColor: "#000000",
                         borderRadius: 4,
                         marginTop: 4,
@@ -674,30 +763,7 @@ const App = () => {
                         marginLeft: 4,
                         marginRight: 6,
                         padding: 4,
-                        fontSize: 12,
-                        width: 100,
-                        height: 14,
-                        textAlign: "center",
-                        alignContent: "center",
-                        cursor: "pointer",
-                      }}
-                      onClick={() => {
-                        setActiveBoroughs(!activeBoroughs);
-                      }}
-                    >
-                      {!activeBoroughs ? "Show Boroughs" : "Hide Boroughs"}
-                    </div>
-                    <div
-                      style={{
-                        color: "#ffffff",
-                        backgroundColor: "#000000",
-                        borderRadius: 4,
-                        marginTop: 4,
-                        marginBottom: 4,
-                        marginLeft: 4,
-                        marginRight: 6,
-                        padding: 4,
-                        fontSize: 12,
+                        fontSize: 11,
                         width: 100,
                         height: 14,
                         textAlign: "center",
@@ -868,7 +934,7 @@ const App = () => {
                   marginLeft: 10,
                 }}
               >
-                solutions go here for {activeSolution}
+                Solutions for {activeSolution}
                 <div
                   style={{
                     width: 30,

@@ -11,11 +11,11 @@ const text = {
     city_neighbourhood: "Neighbourhoods", // the neighbourhoods of a city
   },
   boroughs: {
-    Etobicoke: "#D4DA3C",
-    "East York": "#E0E0A5",
-    "North York": "#3484B4",
-    "Old Toronto": "#FC7A3C",
-    Scarborough: "#6F3487",
+    Etobicoke: "#80b531",
+    "East York": "#d9bb50",
+    "North York": "#23c7d9",
+    "Old Toronto": "#ed8b45",
+    Scarborough: "#b553a8",
     York: "#383838",
   },
   categories: {
